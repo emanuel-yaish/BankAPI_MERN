@@ -2,21 +2,6 @@ const fs = require("fs");
 const Account = require("../models/accountModel");
 const { getAccountById, updateAccountById } = require("../utils/utils");
 
-const loadAccounts = () => {
-  try {
-    const dataBuffer = fs.readFileSync(`${__dirname}/../data/accounts.json`);
-    const dataJson = dataBuffer.toString();
-    return JSON.parse(dataJson);
-  } catch (err) {
-    return [];
-  }
-};
-
-const saveAccounts = (accounts) => {
-  const dataJson = JSON.stringify(accounts);
-  fs.writeFileSync(`${__dirname}/../data/accounts.json`, dataJson);
-};
-
 const getAllAccounts = async (req, res) => {
   try {
     const accounts = await Account.find();
@@ -51,15 +36,8 @@ const addAccount = async (req, res) => {
 
 const deposit = async (accountId, depositAmount, res) => {
   let account = await getAccountById(accountId);
-  // let account = await Account.findOne({ passportID: accountId });
   const newBalance = { cash: (+account.cash + +depositAmount).toString() };
   account = await updateAccountById({ passportID: accountId }, newBalance);
-
-  // account = await Account.findOneAndUpdate(
-  //   { passportID: accountId },
-  //   newBalance,
-  //   { new: true }
-  // );
 
   res.status(200).json({
     status: "success",
@@ -70,16 +48,12 @@ const deposit = async (accountId, depositAmount, res) => {
   });
 };
 
-const updateCredit = (accountId, newCreditAmmount, res) => {
-  const accounts = loadAccounts();
-
-  const account = accounts.find((account) => account.passportid === accountId);
-
-  if (!account) throw Error("Account not found!");
-
-  account.credit = newCreditAmmount;
-
-  saveAccounts(accounts);
+const updateCredit = async (accountId, newCreditAmmount, res) => {
+  const account = await Account.findOneAndUpdate(
+    { passportID: accountId },
+    { credit: newCreditAmmount },
+    { new: true }
+  );
 
   res.status(200).json({
     status: "success",
@@ -90,19 +64,14 @@ const updateCredit = (accountId, newCreditAmmount, res) => {
   });
 };
 
-const withdraw = (accountId, withdrowAmount, res) => {
-  const accounts = loadAccounts();
-
-  const account = accounts.find((account) => account.passportid === accountId);
-
-  if (!account) throw Error("account not found!");
+const withdraw = async (accountId, withdrowAmount, res) => {
+  let account = await getAccountById(accountId);
 
   if (+account.credit + +account.cash < +withdrowAmount)
     throw Error("insufficient funds!");
 
-  account.cash = (+account.cash - +withdrowAmount).toString();
-
-  saveAccounts(accounts);
+  const newBalance = { cash: (+account.cash - +withdrowAmount).toString() };
+  account = await updateAccountById({ passportID: accountId }, newBalance);
 
   res.status(200).json({
     status: "success",
@@ -113,24 +82,25 @@ const withdraw = (accountId, withdrowAmount, res) => {
   });
 };
 
-const transfer = (accountId, reciverAccontID, transferAmmount, res) => {
-  const accounts = loadAccounts();
-
-  const account = accounts.find((account) => account.passportid === accountId);
+const transfer = async (accountId, reciverAccontID, transferAmmount, res) => {
+  let account = await getAccountById(accountId);
   if (!account) throw Error("Account not found!");
-
-  const reciverAccount = accounts.find(
-    (account) => account.passportid === reciverAccontID
-  );
+  let reciverAccount = await getAccountById(reciverAccontID);
   if (!reciverAccount) throw Error("Account not found!");
 
   if (+account.credit + +account.cash < +transferAmmount)
     throw Error("insufficient funds for transferring!");
 
-  account.cash = (+account.cash - +transferAmmount).toString();
-  reciverAccount.cash = (+reciverAccount.cash + +transferAmmount).toString();
+  const newBalance = { cash: (+account.cash - +transferAmmount).toString() };
+  const reciverNewBalance = {
+    cash: (+reciverAccount.cash + +transferAmmount).toString(),
+  };
 
-  saveAccounts(accounts);
+  account = await updateAccountById({ passportID: accountId }, newBalance);
+  reciverAccount = await updateAccountById(
+    { passportID: reciverAccontID },
+    reciverNewBalance
+  );
 
   res.status(200).json({
     status: "success",
