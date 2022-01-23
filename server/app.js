@@ -6,7 +6,7 @@ const accountRouter = require("./routes/accountRoutes");
 const app = express();
 const path = require("path");
 
-const publicPath = path.join(__dirname, "../../client/build");
+const publicPath = path.join(__dirname, "../client/build");
 app.use(express.static(publicPath));
 
 app.use(cors());
