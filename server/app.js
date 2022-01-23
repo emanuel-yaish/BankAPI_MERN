@@ -19,7 +19,7 @@ app.use("/bank", bankRouter);
 app.use("/accounts", accountRouter);
 
 app.get("*", function (req, res) {
-  res.sendFile(path.join(__dirname, "public", "index.html"));
+  res.sendFile(path.join(__dirname, "public", "../client/index.html"));
 });
 
 module.exports = app;
