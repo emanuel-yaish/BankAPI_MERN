@@ -3,6 +3,18 @@
   "version": "1.0.0",
   "description": "This project simulate a bank API built with Mongo Express React and Node JS, this project is a part of Appleseeds Bootcamp weekend assignment",
   "main": "server.js",
+  "dependencies": {
+    "axios": "^0.25.0",
+    "concurrently": "^7.0.0",
+    "cors": "^2.8.5",
+    "create-react-app": "^5.0.0",
+    "dotenv": "^14.2.0",
+    "express": "^4.17.2",
+    "mongo": "^0.1.0",
+    "mongoose": "^6.1.7",
+    "path": "^0.12.7",
+    "validator": "^13.7.0"
+  },
   "scripts": {
     "start": "node server/server.js",
     "server": "nodemon server/server.js",
