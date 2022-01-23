@@ -13,7 +13,7 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-app.use("/", bankRouter);
+app.use("/bank", bankRouter);
 app.use("/accounts", accountRouter);
 
 app.get("*", (req, res) => {
